@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATLAS // Adivina el hito</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.css" />
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="scoreboard">
+    <div class="brand">
+      <div>
+        <div class="mark">ATLAS<span>//</span>HITOS</div>
+        <div class="sub">localiza el lugar</div>
+      </div>
+    </div>
+    <div class="led-group">
+      <div class="led"><div class="label">Ronda</div><div class="value" id="ledRound">0/0</div></div>
+      <div class="led"><div class="label">Puntos</div><div class="value" id="ledScore">0</div></div>
+    </div>
+  </div>
+
+  <div class="intro show" id="introScreen">
+    <h1>Explora el lugar como si estuvieras allí</h1>
+    <p>Verás una imagen a pie de calle (Mapillary) cerca de un monumento o lugar famoso de cualquier parte del mundo. Arrastra para mirar alrededor, sigue las flechas si hay más fotos conectadas, y marca en el mapa dónde crees que está.</p>
+    <button class="btn" id="startBtn">Empezar partida (6 rondas)</button>
+    <p class="note" id="tokenWarning" style="display:none;">
+      ⚠️ Falta configurar el token de Mapillary en <code>config.js</code>.
+    </p>
+  </div>
+
+  <div id="gameScreen" style="display:none;">
+    <div class="panel-title">Vista a pie de calle</div>
+    <div class="street-card">
+      <div id="mlyViewer"></div>
+      <div class="sat-status" id="streetStatus">Buscando imágenes cercanas…</div>
+    </div>
+
+    <div class="panel-title" style="margin-top:16px;">Marca tu ubicación</div>
+    <div class="guess-card">
+      <div id="guessMap"></div>
+    </div>
+
+    <div class="action-row">
+      <div class="hint" id="hintText">Haz clic en el mapa para colocar tu marcador</div>
+      <button class="btn" id="confirmBtn" disabled>Confirmar ubicación</button>
+    </div>
+
+    <div class="result" id="resultPanel">
+      <p class="landmark-name" id="resStadium"></p>
+      <p class="meta" id="resMeta"></p>
+      <p class="fact" id="resFact"></p>
+      <div class="stats">
+        <div class="stat"><div class="num" id="resDist">–</div><div class="lbl">Km de error</div></div>
+        <div class="stat"><div class="num" id="resPoints">–</div><div class="lbl">Puntos</div></div>
+      </div>
+      <button class="btn" id="nextBtn">Siguiente ronda →</button>
+    </div>
+  </div>
+
+  <div class="final" id="finalScreen">
+    <div class="hint">Resultado final</div>
+    <div class="rank" id="finalRank">—</div>
+    <div class="totalscore" id="finalScore">0 / 0 puntos</div>
+    <div class="action-row" style="justify-content:center; margin-top:22px;">
+      <button class="btn" id="restartBtn">Jugar de nuevo</button>
+    </div>
+  </div>
+
+  <footer>imágenes a pie de calle © colaboradores de Mapillary · mapa © OpenStreetMap</footer>
+</div>
+
+<script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.js"></script>
+<script src="landmarks.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
