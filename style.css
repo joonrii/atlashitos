@@ -57,11 +57,12 @@ body{
   font-family:'Courier New',monospace;font-size:11px;letter-spacing:.15em;
   text-transform:uppercase;color:var(--navy-light);margin-bottom:6px;
 }
-.street-card, .guess-card{
+.street-card, .guess-card, .photo-card{
   background:var(--navy);border:1px solid var(--navy);position:relative;
   box-shadow:0 4px 0 rgba(0,0,0,.1), 0 10px 20px rgba(0,0,0,.12);
 }
-#mlyViewer{width:100%;height:320px;}
+.photo-card{min-height:280px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+#landmarkImg{width:100%;height:320px;object-fit:cover;display:block;}
 #guessMap{width:100%;height:340px;}
 .sat-status{
   position:absolute;bottom:10px;left:10px;right:10px;
@@ -102,6 +103,6 @@ footer{
 }
 
 @media(max-width:600px){
-  #mlyViewer{height:240px;}
+  #landmarkImg{height:220px;}
   #guessMap{height:260px;}
 }

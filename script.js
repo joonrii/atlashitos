@@ -9,7 +9,6 @@ let guessMap, guessMarker, actualMarker, guessLine;
 let guessLatLng = null;
 let locked = false;
 
-let mlyViewer = null;
 let currentLandmark = null;
 
 function shuffle(arr){
@@ -36,15 +35,17 @@ function scoreForDistance(km){
   return Math.max(0, Math.min(5000, s));
 }
 
-function setStreetStatus(text, isError){
-  const el = document.getElementById('streetStatus');
+function setPhotoStatus(text, isError){
+  const el = document.getElementById('photoStatus');
   if(!text){ el.classList.add('hidden'); return; }
   el.classList.remove('hidden');
   el.classList.toggle('error', !!isError);
   el.textContent = text;
 }
 
-// --- Mapillary lookup -----------------------------------------------------
+// --- Wikipedia lookup -------------------------------------------------------
+// Usa la API pública REST de Wikipedia (sin token, sin límites de bbox).
+// Devuelve la URL de la imagen principal del artículo, o null si no tiene.
 
 async function fetchWithTimeout(url, ms){
   const controller = new AbortController();
@@ -57,33 +58,18 @@ async function fetchWithTimeout(url, ms){
   }
 }
 
-async function findNearbyImage(lat, lng){
-  // Un único radio generoso (~2.2km) es suficiente en la mayoría de los casos
-  // y evita disparar decenas de peticiones por monumento. Los sitios muy
-  // remotos (Petra, Machu Picchu...) pueden fallar más a menudo: si notas
-  // que se saltan siempre, sube "off" o vuelve a introducir el barrido
-  // 1km→22km que usa guesstadium.
-  const off = 0.02;
-  const lngOff = off / Math.cos(lat * Math.PI/180);
-  const minLng = lng - lngOff, maxLng = lng + lngOff;
-  const minLat = lat - off, maxLat = lat + off;
-  const url = `https://graph.mapillary.com/images?access_token=${MAPILLARY_TOKEN}&fields=id&bbox=${minLng},${minLat},${maxLng},${maxLat}&limit=1`;
-
+async function fetchLandmarkImage(wikiTitle){
+  const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(wikiTitle)}`;
   let res;
   try{
     res = await fetchWithTimeout(url, 5000);
   }catch(err){
     return null; // timeout o error de red: se descarta este monumento, sin bloquear
   }
-  if(res.status === 401 || res.status === 403){
-    throw new Error('AUTH');
-  }
   if(!res.ok) return null;
   const data = await res.json();
-  if(data && data.data && data.data.length > 0){
-    return data.data[0].id;
-  }
-  return null;
+  const img = (data.originalimage && data.originalimage.source) || (data.thumbnail && data.thumbnail.source);
+  return img || null;
 }
 
 // --- Map setup --------------------------------------------------------------
@@ -112,23 +98,9 @@ function initGuessMap(){
   });
 }
 
-function initMlyViewer(imageId){
-  mlyViewer = new mapillary.Viewer({
-    accessToken: MAPILLARY_TOKEN,
-    container: 'mlyViewer',
-    imageId: imageId,
-    component: { cover:false, bearing:false }
-  });
-  mlyViewer.on('image', () => setStreetStatus(null));
-}
-
 // --- Game flow ----------------------------------------------------------
 
 async function startGame(){
-  if(!MAPILLARY_TOKEN || MAPILLARY_TOKEN.indexOf('PEGA_AQUI') === 0){
-    document.getElementById('tokenWarning').style.display = 'block';
-    return;
-  }
   candidatePool = shuffle(LANDMARKS);
   candidateIndex = 0;
   roundsPlayed = 0;
@@ -158,23 +130,20 @@ async function advanceRound(){
   if(guessLine){ guessMap.removeLayer(guessLine); guessLine=null; }
   guessMap.setView([20,0], 2);
 
-  setStreetStatus('Buscando imágenes cercanas…', false);
+  document.getElementById('landmarkImg').style.display = 'none';
+  document.getElementById('landmarkImg').src = '';
+  setPhotoStatus('Buscando foto…', false);
 
   let found = null;
-  try{
-    while(candidateIndex < candidatePool.length && !found){
-      const l = candidatePool[candidateIndex++];
-      setStreetStatus(`Probando ${l.name}… (${candidateIndex}/${candidatePool.length})`, false);
-      const imageId = await findNearbyImage(l.lat, l.lng);
-      if(imageId){ found = { landmark:l, imageId }; }
-    }
-  }catch(err){
-    setStreetStatus('Token de Mapillary inválido o caducado. Revisa config.js.', true);
-    return;
+  while(candidateIndex < candidatePool.length && !found){
+    const l = candidatePool[candidateIndex++];
+    setPhotoStatus(`Probando ${l.name}… (${candidateIndex}/${candidatePool.length})`, false);
+    const imageUrl = await fetchLandmarkImage(l.wiki);
+    if(imageUrl){ found = { landmark:l, imageUrl }; }
   }
 
   if(!found){
-    setStreetStatus('No quedan monumentos con cobertura de Mapillary cercana.', true);
+    setPhotoStatus('No se ha podido cargar ninguna foto más. Fin de la partida.', true);
     endGame();
     return;
   }
@@ -182,13 +151,16 @@ async function advanceRound(){
   currentLandmark = found.landmark;
   roundsPlayed++;
 
-  if(!mlyViewer){
-    initMlyViewer(found.imageId);
-  } else {
-    mlyViewer.moveTo(found.imageId).catch(() => {
-      setStreetStatus('No se pudo cargar esta imagen. Pasando a la siguiente ronda…', true);
-    });
-  }
+  const img = document.getElementById('landmarkImg');
+  img.onload = () => {
+    img.style.display = 'block';
+    setPhotoStatus(null);
+  };
+  img.onerror = () => {
+    setPhotoStatus('No se pudo cargar esta imagen. Pasando a la siguiente ronda…', true);
+    setTimeout(advanceRound, 800);
+  };
+  img.src = found.imageUrl;
 
   updateScoreboard();
 }

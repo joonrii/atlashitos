@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ATLAS // Adivina el hito</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-<link rel="stylesheet" href="https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.css" />
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -25,19 +24,16 @@
   </div>
 
   <div class="intro show" id="introScreen">
-    <h1>Explora el lugar como si estuvieras allí</h1>
-    <p>Verás una imagen a pie de calle (Mapillary) cerca de un monumento o lugar famoso de cualquier parte del mundo. Arrastra para mirar alrededor, sigue las flechas si hay más fotos conectadas, y marca en el mapa dónde crees que está.</p>
+    <h1>¿Reconoces el lugar? Encuéntralo en el mapa</h1>
+    <p>Verás una fotografía de un monumento o lugar famoso de cualquier parte del mundo. Marca en el mapa dónde crees que está — cuanto más cerca, más puntos.</p>
     <button class="btn" id="startBtn">Empezar partida (6 rondas)</button>
-    <p class="note" id="tokenWarning" style="display:none;">
-      ⚠️ Falta configurar el token de Mapillary en <code>config.js</code>.
-    </p>
   </div>
 
   <div id="gameScreen" style="display:none;">
-    <div class="panel-title">Vista a pie de calle</div>
-    <div class="street-card">
-      <div id="mlyViewer"></div>
-      <div class="sat-status" id="streetStatus">Buscando imágenes cercanas…</div>
+    <div class="panel-title">Foto del lugar</div>
+    <div class="photo-card">
+      <img id="landmarkImg" alt="Foto del monumento" style="display:none;">
+      <div class="sat-status" id="photoStatus">Buscando foto…</div>
     </div>
 
     <div class="panel-title" style="margin-top:16px;">Marca tu ubicación</div>
@@ -71,12 +67,10 @@
     </div>
   </div>
 
-  <footer>imágenes a pie de calle © colaboradores de Mapillary · mapa © OpenStreetMap</footer>
+  <footer>fotografías vía Wikipedia · mapa © OpenStreetMap</footer>
 </div>
 
-<script src="config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://unpkg.com/mapillary-js@4.1.2/dist/mapillary.js"></script>
 <script src="landmarks.js"></script>
 <script src="script.js"></script>
 </body>
