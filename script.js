@@ -137,7 +137,7 @@ async function advanceRound(){
   let found = null;
   while(candidateIndex < candidatePool.length && !found){
     const l = candidatePool[candidateIndex++];
-    setPhotoStatus(`Probando ${l.name}… (${candidateIndex}/${candidatePool.length})`, false);
+    setPhotoStatus(`Buscando foto… (intento ${candidateIndex}/${candidatePool.length})`, false);
     const imageUrl = await fetchLandmarkImage(l.wiki);
     if(imageUrl){ found = { landmark:l, imageUrl }; }
   }
